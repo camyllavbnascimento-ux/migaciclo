@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "MigaCiclo",
+  "short_name": "MigaCiclo",
+  "description": "Acompanhe seu ciclo menstrual com o MigaCiclo.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#7e22ce",
+  "icons": [
+    {
+      "src": "capa.jpg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

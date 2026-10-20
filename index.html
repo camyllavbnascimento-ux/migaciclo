@@ -1,0 +1,906 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MigaCiclo 🦋</title>
+  <style>
+    /* ==========================================================================
+       ESTILOS GERAIS E LAYOUT
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f7f0f8;
+      color: #4a3b4e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(135deg, #81328f, #5c1d68);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #user-pill {
+      display: none;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+    }
+
+    /* SISTEMA DE TELAS */
+    .screen {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    h2 {
+      color: #5c1d68;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    /* FORMULÁRIOS E BOTÕES */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      color: #5c1d68;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #81328f;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 25px;
+      background: #81328f;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #5c1d68;
+    }
+
+    .btn-google {
+      background: #ffffff;
+      color: #757575;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* CALENDÁRIO */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .cal-day {
+      padding: 10px 0;
+      border-radius: 50%;
+      font-size: 13px;
+      cursor: pointer;
+      background: #f8f9fa;
+    }
+
+    .cal-day.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    .cal-day.today {
+      border: 2px solid #81328f;
+      font-weight: bold;
+    }
+
+    .cal-day.period {
+      background-color: #ff4d6d;
+      color: white;
+    }
+
+    .cal-day.fertile {
+      background-color: #e0aaff;
+      color: #3c096c;
+    }
+
+    .cal-day.ovulation {
+      background-color: #ffb703;
+      color: white;
+      font-weight: bold;
+    }
+
+    .cal-day.selected {
+      outline: 2px solid #333;
+    }
+
+    /* CARD DE STATUS DO CICLO */
+    .status-card {
+      background: #f3ebf6;
+      border-left: 4px solid #81328f;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+
+    /* SINTOMAS - OPÇÕES */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .opt-btn {
+      padding: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .opt-btn.selected {
+      background: #81328f;
+      color: white;
+      border-color: #81328f;
+    }
+
+    /* HISTÓRICO DE SINTOMAS */
+    .history-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .history-date {
+      font-weight: bold;
+      color: #5c1d68;
+      margin-bottom: 4px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-sec {
+      background: #e1bee7;
+      color: #5c1d68;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🦋 MigaCiclo</h1>
+    <div id="user-pill">👤 <span id="header-user-name">Usuária</span></div>
+  </header>
+
+  <main>
+    <!-- TELA 1: CADASTRO INICIAL -->
+    <section id="screen-1" class="screen active">
+      <h2>Bem-vinda ao MigaCiclo! 🦋</h2>
+      <p>Acompanhe seu ciclo menstrual de forma simples, leve e com suporte de voz.</p>
+      
+      <form id="register-form">
+        <div class="form-group">
+          <label for="user-name">Como quer ser chamada?</label>
+          <input type="text" id="user-name" required placeholder="Digite seu nome">
+        </div>
+        <div class="form-group">
+          <label for="user-age">Sua idade</label>
+          <input type="number" id="user-age" required min="10" max="100" placeholder="Ex: 22">
+        </div>
+        <button type="submit" class="btn">Continuar</button>
+      </form>
+
+      <button class="btn btn-google" onclick="MigaCiclo.handleGoogleLogin()">
+        Entrar com Google
+      </button>
+    </section>
+
+    <!-- TELA 2: DADOS DO CICLO -->
+    <section id="screen-2" class="screen">
+      <h2>Configurar Ciclo 📅</h2>
+      <p>Informe os dados abaixo para gerarmos seu calendário personalizado.</p>
+      
+      <form id="cycle-form">
+        <div class="form-group">
+          <label for="last-period-date">Data da última menstruação</label>
+          <input type="date" id="last-period-date" required>
+        </div>
+        <div class="form-group">
+          <label for="cycle-duration">Duração média do ciclo (dias)</label>
+          <input type="number" id="cycle-duration" value="28" min="20" max="45">
+        </div>
+        <div class="form-group">
+          <label for="period-duration">Duração da menstruação (dias)</label>
+          <input type="number" id="period-duration" value="5" min="1" max="10">
+        </div>
+        <button type="submit" class="btn">Gerar Meu Calendário</button>
+      </form>
+    </section>
+
+    <!-- TELA 3: CALENDÁRIO E PAINEL -->
+    <section id="screen-3" class="screen">
+      <div class="calendar-header">
+        <button onclick="MigaCiclo.changeMonth(-1)">◀</button>
+        <h3 id="calendar-month-year">Mês Ano</h3>
+        <button onclick="MigaCiclo.changeMonth(1)">▶</button>
+      </div>
+
+      <div class="calendar-grid" id="calendar-days"></div>
+
+      <div class="status-card">
+        <h3 id="cycle-phase-title">Fase Menstrual 🩸</h3>
+        <p id="cycle-phase-desc">Carregando informações da fase...</p>
+        
+        <div class="stats-grid">
+          <div><strong>Fluxo:</strong> <span id="stat-flux">-</span></div>
+          <div><strong>Humor:</strong> <span id="stat-mood">-</span></div>
+          <div><strong>Energia:</strong> <span id="stat-energy">-</span></div>
+          <div><strong>Cólica:</strong> <span id="stat-cramps">-</span></div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn" onclick="MigaCiclo.navigateTo(4)">Registrar Sintomas 📝</button>
+        <button class="btn btn-sec" onclick="MigaCiclo.triggerMigaInteractiveTip()">Dica da Miga 💡</button>
+      </div>
+
+      <!-- IA Tirador de Dúvidas -->
+      <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+        <h2>Dúvidas Frequentes 💬</h2>
+        <input type="text" id="ai-question" placeholder="Ex: O que fazer com cólica?" style="margin-bottom:8px;">
+        <button class="btn btn-sec" onclick="MigaCiclo.askMigaAI()">Perguntar à Miga</button>
+        <div id="ai-response" class="status-card" style="display:none; margin-top:10px;"></div>
+      </div>
+    </section>
+
+    <!-- TELA 4: REGISTRO DE SINTOMAS E HISTÓRICO -->
+    <section id="screen-4" class="screen">
+      <h2>Diário de Sintomas 📓</h2>
+      <p id="report-date-display">Data selecionada: -</p>
+
+      <form id="symptom-form">
+        <label>Humor</label>
+        <div class="options-grid" data-group="mood">
+          <div class="opt-btn" data-val="Feliz">😊 Feliz</div>
+          <div class="opt-btn" data-val="Sensível">🥺 Sensível</div>
+          <div class="opt-btn" data-val="Irritada">😤 Irritada</div>
+        </div>
+
+        <label>Fluxo</label>
+        <div class="options-grid" data-group="flow">
+          <div class="opt-btn" data-val="Leve">💧 Leve</div>
+          <div class="opt-btn" data-val="Moderado">💧💧 Moderado</div>
+          <div class="opt-btn" data-val="Intenso">🩸 Intenso</div>
+        </div>
+
+        <label>Cólica</label>
+        <div class="options-grid" data-group="cramps">
+          <div class="opt-btn" data-val="Nenhuma">✨ Nenhuma</div>
+          <div class="opt-btn" data-val="Leve">⚡ Leve</div>
+          <div class="opt-btn" data-val="Forte">🔥 Forte</div>
+        </div>
+
+        <div class="form-group">
+          <label for="diary-notes">Notas / Observações</label>
+          <textarea id="diary-notes" rows="3" placeholder="Como você está se sentindo hoje?"></textarea>
+        </div>
+
+        <button type="submit" class="btn">Salvar Sintomas</button>
+      </form>
+
+      <h2 style="margin-top: 20px;">Histórico de Registros</h2>
+      <div id="history-list"></div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-sec" onclick="MigaCiclo.navigateTo(3)">Voltar ao Calendário</button>
+        <button class="btn btn-sec" onclick="MigaCiclo.resetData()" style="background:#ffcdd2; color:#c62828;">Reiniciar App</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       LÓGICA JAVASCRIPT OTIMIZADA E UNIFICADA
+       ========================================================================== -->
+  <script>
+    // 1. UTILITÁRIOS
+    const MigaUtils = {
+      getLocalDateString(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    };
+
+    // Módulo central de voz
+    const MigaVoice = {
+      speak(text, pitch = 1.25) {
+        if (!('speechSynthesis' in window)) return;
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-BR';
+        utterance.rate = 0.95;
+        utterance.pitch = pitch;
+
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = voices.find(v => 
+          v.lang.includes('pt') && /Maria|Francisca|Helena|Luciana|Google/i.test(v.name)
+        ) || voices.find(v => v.lang.includes('pt'));
+
+        if (femaleVoice) utterance.voice = femaleVoice;
+        window.speechSynthesis.speak(utterance);
+      },
+
+      init() {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+      }
+    };
+
+    // Base de conhecimento centralizada
+    const MigaKnowledge = {
+      getResponse(question) {
+        const q = question.toLowerCase();
+
+        if (q.includes('fase') || q.includes('ciclo')) {
+          return "O ciclo menstrual possui 4 fases principais: Menstrual, Folicular, Ovulatória e Lútea. Cada uma altera seus níveis hormonais, energia e humor. (Fonte: Ministério da Saúde)";
+        }
+        if (q.includes('camisinha') || q.includes('preservativo') || q.includes('posto') || q.includes('ubs')) {
+          return "Você pode retirar preservativos masculinos e femininos gratuitamente em qualquer Unidade Básica de Saúde (UBS/Postinho) sem necessidade de agendamento!";
+        }
+        if (q.includes('pula') || q.includes('atraso') || q.includes('gravid') || q.includes('atrasada')) {
+          return "Atrasos menstruais podem ocorrer por estresse, alterações de peso, pílula do dia seguinte ou gravidez. Se o atraso persistir, faça um teste ou consulte uma UBS.";
+        }
+        if (q.includes('colica') || q.includes('dor')) {
+          return "Bolsas de água morna na região abdominal, chás relaxantes (como camomila) e exercícios leves ajudam a amenizar as cólicas menstruais.";
+        }
+
+        return "Sou a Miga! Lembre-se que para dúvidas clínicas específicas, é importante consultar um profissional de saúde no seu Postinho de Saúde (UBS).";
+      }
+    };
+
+    // 2. APLICAÇÃO PRINCIPAL MIGACICLO
+    const MigaCiclo = {
+      state: {
+        user: null,
+        cycleInfo: null,
+        symptomsHistory: {},
+        currentScreen: 1,
+        calendarDate: new Date(),
+        selectedDateStr: MigaUtils.getLocalDateString(),
+        tempSymptoms: { mood: '', energy: '', sleep: '', flow: '', cramps: '' }
+      },
+
+      init() {
+        this.loadStorage();
+        this.setupListeners();
+        this.checkNotificationStatus();
+
+        this.navigateTo(this.state.user ? (this.state.cycleInfo ? 3 : 2) : 1);
+        MigaVoice.init();
+      },
+
+      loadStorage() {
+        try {
+          this.state.user = JSON.parse(localStorage.getItem('migaciclo_user'));
+          this.state.cycleInfo = JSON.parse(localStorage.getItem('migaciclo_cycle'));
+          this.state.symptomsHistory = JSON.parse(localStorage.getItem('migaciclo_symptoms')) || {};
+        } catch (e) {
+          console.error('Erro ao carregar LocalStorage:', e);
+        }
+      },
+
+      saveStorage(key, value) {
+        localStorage.setItem(`migaciclo_${key}`, JSON.stringify(value));
+      },
+
+      resetData() {
+        if (confirm('Deseja mesmo reiniciar seus dados no MigaCiclo?')) {
+          localStorage.clear();
+          location.reload();
+        }
+      },
+
+      navigateTo(screenNum) {
+        if (screenNum < 1 || screenNum > 4) return;
+        this.state.currentScreen = screenNum;
+
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`screen-${screenNum}`)?.classList.add('active');
+
+        const userTag = document.getElementById('user-pill');
+        const headerName = document.getElementById('header-user-name');
+        if (this.state.user?.name) {
+          if (userTag) userTag.style.display = 'flex';
+          if (headerName) headerName.textContent = this.state.user.name;
+        }
+
+        if (screenNum === 3) this.renderCalendar();
+        if (screenNum === 4) this.setupScreen4();
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      setupListeners() {
+        // Form Cadastro
+        document.getElementById('register-form')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('user-name')?.value.trim();
+          const age = document.getElementById('user-age')?.value;
+          if (!name || !age) return;
+
+          this.state.user = { name, age, loggedWithGoogle: false };
+          this.saveStorage('user', this.state.user);
+          MigaVoice.speak(`Seja bem-vinda, ${name}! Vamos configurar seu ciclo agora.`);
+          this.navigateTo(2);
+        });
+
+        // Form Ciclo
+        document.getElementById('cycle-form')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const cycleDuration = parseInt(document.getElementById('cycle-duration')?.value) || 28;
+          const periodDuration = parseInt(document.getElementById('period-duration')?.value) || 5;
+          const lastPeriodDate = document.getElementById('last-period-date')?.value;
+
+          if (!lastPeriodDate) return alert('Por favor, selecione a data da última menstruação.');
+
+          this.state.cycleInfo = { cycleDuration, periodDuration, lastPeriodDate };
+          this.saveStorage('cycle', this.state.cycleInfo);
+          MigaVoice.speak('Prontinho! Seu calendário foi gerado com sucesso.');
+          this.checkNotificationStatus();
+          this.navigateTo(3);
+        });
+
+        // Opções de Sintomas
+        document.querySelectorAll('.options-grid').forEach(grid => {
+          const group = grid.getAttribute('data-group');
+          grid.querySelectorAll('.opt-btn').forEach(btn => {
+            btn.onclick = () => {
+              grid.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+              btn.classList.add('selected');
+              this.state.tempSymptoms[group] = btn.getAttribute('data-val');
+            };
+          });
+        });
+
+        // Form Sintomas
+        document.getElementById('symptom-form')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const dateStr = this.state.selectedDateStr;
+          const notes = document.getElementById('diary-notes')?.value.trim() || '';
+
+          this.state.symptomsHistory[dateStr] = { ...this.state.tempSymptoms, notes };
+          this.saveStorage('symptoms', this.state.symptomsHistory);
+          MigaVoice.speak('Seus sintomas foram salvos com sucesso!');
+          alert('Sintomas salvos no seu diário!');
+          this.navigateTo(3);
+        });
+      },
+
+      handleGoogleLogin() {
+        this.state.user = { name: 'Usuária Google', age: 25, loggedWithGoogle: true };
+        this.saveStorage('user', this.state.user);
+        MigaVoice.speak('Oi! Sou a Miga! Vou te guiar no seu ciclo.');
+        this.navigateTo(2);
+      },
+
+      renderCalendar() {
+        if (!this.state.cycleInfo) return;
+
+        const { cycleDuration, periodDuration, lastPeriodDate } = this.state.cycleInfo;
+        const year = this.state.calendarDate.getFullYear();
+        const month = this.state.calendarDate.getMonth();
+
+        const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const monthTitle = document.getElementById('calendar-month-year');
+        if (monthTitle) monthTitle.textContent = `${monthNames[month]} ${year}`;
+
+        const grid = document.getElementById('calendar-days');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDayIndex; i++) {
+          grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day empty' }));
+        }
+
+        const todayStr = MigaUtils.getLocalDateString();
+        const lastPeriod = new Date(lastPeriodDate + 'T00:00:00');
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cellDate = new Date(year, month, day);
+          const dateStr = MigaUtils.getLocalDateString(cellDate);
+
+          const dayCell = document.createElement('div');
+          dayCell.className = 'cal-day';
+          dayCell.textContent = day;
+
+          if (dateStr === todayStr) dayCell.classList.add('today');
+
+          const diffDays = Math.floor((cellDate - lastPeriod) / 86400000);
+          const cycleDay = ((diffDays % cycleDuration) + cycleDuration) % cycleDuration;
+          const ovulationDay = cycleDuration - 14;
+
+          if (cycleDay >= 0 && cycleDay < periodDuration) {
+            dayCell.classList.add('period');
+          } else if (cycleDay === ovulationDay) {
+            dayCell.classList.add('ovulation');
+          } else if (cycleDay >= ovulationDay - 3 && cycleDay <= ovulationDay + 2) {
+            dayCell.classList.add('fertile');
+          }
+
+          dayCell.onclick = () => this.selectDay(dateStr, cycleDay, periodDuration, ovulationDay);
+          grid.appendChild(dayCell);
+        }
+
+        const todayDiff = Math.floor((new Date() - lastPeriod) / 86400000);
+        const todayCycleDay = ((todayDiff % cycleDuration) + cycleDuration) % cycleDuration;
+        this.selectDay(todayStr, todayCycleDay, periodDuration, cycleDuration - 14);
+      },
+
+      changeMonth(dir) {
+        this.state.calendarDate.setMonth(this.state.calendarDate.getMonth() + dir);
+        this.renderCalendar();
+      },
+
+      selectDay(dateStr, cycleDay, periodDuration, ovulationDay) {
+        this.state.selectedDateStr = dateStr;
+        document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+
+        const phaseTitle = document.getElementById('cycle-phase-title');
+        const phaseDesc = document.getElementById('cycle-phase-desc');
+
+        if (phaseTitle && phaseDesc) {
+          if (cycleDay >= 0 && cycleDay < periodDuration) {
+            phaseTitle.textContent = 'Fase Menstrual 🩸';
+            phaseDesc.textContent = 'O endométrio está se descamando. Momento de descansar e manter-se hidratada.';
+          } else if (cycleDay === ovulationDay) {
+            phaseTitle.textContent = 'Dia da Ovulação 🌟';
+            phaseDesc.textContent = 'Pico de fertilidade! A liberação do óvulo ocorre neste dia.';
+          } else if (cycleDay >= ovulationDay - 3 && cycleDay <= ovulationDay + 2) {
+            phaseTitle.textContent = 'Janela Fértil 💜';
+            phaseDesc.textContent = 'Período fértil com maior probabilidade de concepção.';
+          } else if (cycleDay > ovulationDay) {
+            phaseTitle.textContent = 'Fase Lútea 🌙';
+            phaseDesc.textContent = 'Fase pré-menstrual. Acompanhe possíveis oscilações de humor e cólicas.';
+          } else {
+            phaseTitle.textContent = 'Fase Folicular ✨';
+            phaseDesc.textContent = 'Elevação do estrogênio! Energia e foco em alta.';
+          }
+        }
+
+        const history = this.state.symptomsHistory[dateStr];
+        ['flow', 'mood', 'energy', 'cramps'].forEach(key => {
+          const el = document.getElementById(`stat-${key === 'flow' ? 'flux' : key}`);
+          if (el) el.textContent = history?.[key] || '-';
+        });
+      },
+
+      setupScreen4() {
+        const dateStr = this.state.selectedDateStr;
+        const display = document.getElementById('report-date-display');
+        if (display) display.textContent = `Data Selecionada: ${dateStr}`;
+
+        this.state.tempSymptoms = { mood: '', energy: '', sleep: '', flow: '', cramps: '' };
+        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+
+        const notesField = document.getElementById('diary-notes');
+        if (notesField) notesField.value = '';
+
+        const existing = this.state.symptomsHistory[dateStr];
+        if (existing) {
+          Object.keys(existing).forEach(key => {
+            if (key === 'notes') {
+              if (notesField) notesField.value = existing.notes;
+            } else {
+              const val = existing[key];
+              const btn = document.querySelector(`.options-grid[data-group="${key}"] .opt-btn[data-val="${val}"]`);
+              if (btn) {
+                btn.classList.add('selected');
+                this.state.tempSymptoms[key] = val;
+              }
+            }
+          });
+        }
+
+        this.renderHistory();
+      },
+
+      renderHistory() {
+        const list = document.getElementById('history-list');
+        if (!list) return;
+
+        const dates = Object.keys(this.state.symptomsHistory).sort().reverse();
+        if (!dates.length) {
+          list.innerHTML = '<p style="font-size:12px; color:#888;">Nenhum registro gravado ainda.</p>';
+          return;
+        }
+
+        list.innerHTML = dates.map(date => {
+          const item = this.state.symptomsHistory[date];
+          return `
+            <div class="history-card">
+              <div class="history-date">📅 ${date}</div>
+              <div><strong>Humor:</strong> ${item.mood || '-'} | <strong>Fluxo:</strong> ${item.flow || '-'}</div>
+              <div><strong>Cólica:</strong> ${item.cramps || '-'} | <strong>Energia:</strong> ${item.energy || '-'}</div>
+              ${item.notes ? `<div style="font-style:italic; margin-top:4px;">"${item.notes}"</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      },
+
+      askMigaAI() {
+        const input = document.getElementById('ai-question');
+        const responseBox = document.getElementById('ai-response');
+        if (!input || !responseBox) return;
+
+        const question = input.value.trim();
+        if (!question) return;
+
+        const answer = MigaKnowledge.getResponse(question);
+
+        responseBox.style.display = 'block';
+        responseBox.textContent = `🦋 Miga responde: "${answer}"`;
+        MigaVoice.speak(answer);
+        input.value = '';
+      },
+
+      checkNotificationStatus() {
+        if (!('Notification' in window) || !this.state.cycleInfo) return;
+
+        if (Notification.permission === 'default') {
+          Notification.requestPermission();
+        } else if (Notification.permission === 'granted') {
+          this.calculateAndNotify();
+        }
+      },
+
+      calculateAndNotify() {
+        const { cycleDuration, lastPeriodDate } = this.state.cycleInfo;
+        const diffDays = Math.floor((new Date() - new Date(lastPeriodDate + 'T00:00:00')) / 86400000);
+        const nextPeriodDays = cycleDuration - (diffDays % cycleDuration);
+
+        if (nextPeriodDays === 3) {
+          new Notification("MigaCiclo 🦋", {
+            body: "Faltam apenas 3 dias para o início previsto da sua menstruação. Prepare seus absorventes e cuide-se!",
+            icon: "🦋"
+          });
+        }
+      },
+
+      triggerMigaInteractiveTip() {
+        const tips = [
+          "Beba bastante água para diminuir a retenção de líquidos na TPM! 💧",
+          "Sabia que o SUS fornece preservativos gratuitos em qualquer Postinho de Saúde? 🏥",
+          "Exercícios leves ajudam a liberar endorfina e aliviam as cólicas menstruais. 🧘‍♀️",
+          "Sempre consulte uma UBS ou ginecologista para escolher o melhor método anticoncepcional!"
+        ];
+        const tip = tips[Math.floor(Math.random() * tips.length)];
+        MigaVoice.speak(tip);
+        alert(`🦋 Miga diz:\n\n"${tip}"`);
+      }
+    };
+
+    // 3. WIDGET ASSISTENTE FLUTUANTE
+    class VirtualAssistant {
+      constructor(options = {}) {
+        this.name = options.name || "Miga";
+        this.avatar = options.avatar || "🦋";
+        this.welcomeMessage = options.welcomeMessage || `(Oi! Sou a ${this.name}! Vou te guiar no seu ciclo)`;
+        this.init();
+      }
+
+      init() {
+        this.createWidgetDOM();
+        this.setupListeners();
+      }
+
+      createWidgetDOM() {
+        const container = document.createElement('div');
+        container.id = 'assistant-container';
+        container.innerHTML = `
+          <button id="assistant-toggle-btn" style="
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            border-radius: 50%; background: linear-gradient(135deg, #f1bf42, #81328f);
+            border: none; color: white; font-size: 28px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+          ">${this.avatar}</button>
+
+          <div id="assistant-chat-box" style="
+            display: none; position: fixed; bottom: 90px; right: 20px; width: 320px;
+            max-height: 450px; background: white; border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e1bee7;
+            flex-direction: column; overflow: hidden; z-index: 9999; font-family: sans-serif;
+          ">
+            <div style="background: #5c1d68; color: white; padding: 14px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <span>${this.avatar}</span> Assistente ${this.name}
+              </div>
+              <button id="assistant-close-btn" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">✕</button>
+            </div>
+
+            <div id="assistant-messages" style="padding: 14px; height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fbf7fc;">
+              <div style="background: #f3ebf6; color: #5c1d68; padding: 10px 14px; border-radius: 12px; font-size: 13px; border-left: 4px solid #f1bf42;">
+                ${this.welcomeMessage}
+              </div>
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 6px; background: white;">
+              <input type="text" id="assistant-input" placeholder="Tire sua dúvida..." style="
+                flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; outline: none;
+              ">
+              <button id="assistant-send-btn" style="
+                background: #81328f; color: white; border: none; padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: bold;
+              ">Enviar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(container);
+      }
+
+      setupListeners() {
+        const toggleBtn = document.getElementById('assistant-toggle-btn');
+        const closeBtn = document.getElementById('assistant-close-btn');
+        const chatBox = document.getElementById('assistant-chat-box');
+        const sendBtn = document.getElementById('assistant-send-btn');
+        const input = document.getElementById('assistant-input');
+
+        const toggleChat = () => {
+          const isOpen = chatBox.style.display === 'flex';
+          chatBox.style.display = isOpen ? 'none' : 'flex';
+          if (!isOpen) MigaVoice.speak(this.welcomeMessage, 1.2);
+        };
+
+        if (toggleBtn) toggleBtn.onclick = toggleChat;
+        if (closeBtn) closeBtn.onclick = () => chatBox.style.display = 'none';
+
+        const handleSend = () => {
+          const text = input?.value.trim();
+          if (!text) return;
+
+          this.addMessage('user', text);
+          if (input) input.value = '';
+
+          setTimeout(() => {
+            const response = MigaKnowledge.getResponse(text);
+            this.addMessage('assistant', response);
+            MigaVoice.speak(response, 1.2);
+          }, 400);
+        };
+
+        if (sendBtn) sendBtn.onclick = handleSend;
+        if (input) input.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
+      }
+
+      addMessage(sender, text) {
+        const messagesBox = document.getElementById('assistant-messages');
+        if (!messagesBox) return;
+
+        const msg = document.createElement('div');
+        const isUser = sender === 'user';
+
+        msg.style.cssText = isUser 
+          ? 'align-self: flex-end; background: #81328f; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; font-size: 13px; max-width: 80%;'
+          : 'align-self: flex-start; background: #f3ebf6; color: #5c1d68; padding: 8px 12px; border-radius: 12px 12px 12px 0; font-size: 13px; max-width: 80%; border-left: 3px solid #f1bf42;';
+
+        msg.textContent = text;
+        messagesBox.appendChild(msg);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+      }
+    }
+
+    // 4. INICIALIZAÇÃO ÚNICA DA APLICAÇÃO
+    window.addEventListener('DOMContentLoaded', () => {
+      MigaCiclo.init();
+      window.migaAssistant = new VirtualAssistant();
+    });
+  </script>
+</body>
+</html>
+
+```
